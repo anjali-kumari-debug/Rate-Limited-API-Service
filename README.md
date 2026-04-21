@@ -18,14 +18,27 @@ Accepts:
 
 Behavior:
 - Allows at most **5 requests per user per minute** by default
-- Returns `429 Too Many Requests` if the user exceeds the limit
+- If user exceeds limit, request is queued for retry processing (bonus queueing)
 
 Example success response:
 
 ```json
 {
   "message": "Request accepted",
-  "user_id": "user-123"
+  "user_id": "user-123",
+  "queued": false,
+  "job_id": null
+}
+```
+
+Example queued response:
+
+```json
+{
+  "message": "Max 5 requests per user per 60 seconds exceeded, retry after 12 seconds. Request queued.",
+  "user_id": "user-123",
+  "queued": true,
+  "job_id": "3b4f..."
 }
 ```
 
@@ -35,6 +48,10 @@ Returns per-user stats:
 - rejected request total
 - current requests in active 60-second window
 - configured per-minute limit
+
+### `GET /queue/stats`
+Returns current queued request count.
+- Queue is processed automatically by a background worker loop.
 
 ## How to Run
 
@@ -92,6 +109,8 @@ All runtime configuration is driven by `.env`.
 - `REDIS_USERNAME`
 - `REDIS_PASSWORD`
 - `REDIS_MAX_CONNECTIONS` (default `30`)
+- `QUEUE_WORKER_ENABLED` (default `true`)
+- `QUEUE_WORKER_INTERVAL_SECONDS` (default `1.0`)
 
 ## Design Decisions
 
@@ -100,6 +119,7 @@ All runtime configuration is driven by `.env`.
 - **Concurrency safety:** Atomic Lua script in Redis to evict/check/append/update stats in one operation
 - **Storage:** Redis-backed state to support multi-instance deployments
 - **Connection management:** Redis connection pool with max `30` connections
+- **Queueing bonus:** Redis list-based queue for delayed retry processing with automatic background draining
 
 ## Correctness Under Parallel Requests
 
@@ -119,7 +139,7 @@ All runtime configuration is driven by `.env`.
 ## What I Would Improve With More Time
 
 - Add robust Redis retry/circuit-breaker behavior
-- Add request queue/retry behavior for soft throttling use cases
+- Move queue worker into separate process/container for independent scaling
 - Add tests:
   - unit tests for limiter edge cases
   - concurrency tests with parallel clients
@@ -131,10 +151,7 @@ All runtime configuration is driven by `.env`.
 
 ## Bonus Direction (Optional)
 
-- **Redis-backed limiter:** production-ready scaling and stronger global consistency
-- **Queueing:** push over-limit requests into delayed processing queue
-- **Cloud deployment:** package with Docker and deploy to Azure
+- [x] **Use Redis or a database:** implemented with Redis-backed atomic rate limiting
+- [x] **Add retry logic or queueing:** implemented with delayed Redis queue + auto worker drain
+- [ ] **Deploy on Azure or any cloud platform:** not yet done in this submission
 
-## Submission Note
-
-To submit, push this project to GitHub and share the repository URL in your email reply along with this README.
