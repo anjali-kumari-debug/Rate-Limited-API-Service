@@ -133,7 +133,6 @@ All runtime configuration is driven by `.env`.
 ## Limitations (Important)
 
 - If Redis is unavailable, rate limiting fails unless fallback logic is added
-- Stats endpoint scans known users set; for very large user cardinality, pagination may be needed
 - No authentication/authorization layer in this sample
 
 ## What I Would Improve With More Time
@@ -153,5 +152,6 @@ All runtime configuration is driven by `.env`.
 
 - [x] **Use Redis or a database:** implemented with Redis-backed atomic rate limiting
 - [x] **Add retry logic or queueing:** implemented with delayed Redis queue + auto worker drain
-- [ ] **Deploy on Azure or any cloud platform:** not yet done in this submission
+- [x] **Deploy on Azure or any cloud platform:** Deployed on render : https://rate-limited-api-service.onrender.com/
+
 
