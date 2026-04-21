@@ -93,6 +93,7 @@ def root() -> dict[str, str]:
         "version": APP_VERSION,
         "status": "ok",
         "docs": "/docs",
+        "developer": "Anjali Kumari",
     }
 
 
