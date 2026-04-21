@@ -86,6 +86,16 @@ request_queue = RedisRequestQueue(redis_client=redis_client)
 queue_worker_task: asyncio.Task | None = None
 
 
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "service": APP_NAME,
+        "version": APP_VERSION,
+        "status": "ok",
+        "docs": "/docs",
+    }
+
+
 async def _queue_worker_loop() -> None:
     def _handler(user_id: str, payload: dict) -> bool:
         # Payload is available for business logic; rate limit gate controls processing.
